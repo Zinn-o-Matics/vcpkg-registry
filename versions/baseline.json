@@ -3,6 +3,10 @@
     "imgui": {
       "baseline": "1.80",
       "port-version": 1
-    }
+    },
+	"spdlog": {
+	  "baseline": "1.11.0",
+	  "port-version": 2
+	}
   }
 }
