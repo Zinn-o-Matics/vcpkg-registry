@@ -33,7 +33,7 @@ rev=$(git rev-parse "HEAD:ports/$repoName/")
 versionFile="versions/${repoFirstLetter}-/${repoName}.json"
 versionFileTmp="$versionFile.tmp"
 mv "$versionFile" "$versionFileTmp"
-jq --tab '.versions[0]."git-tree" = "test"' "$versionFileTmp" > "$versionFile"
+jq --tab --arg rev "$rev" '.versions[0]."git-tree" = $rev' "$versionFileTmp" > "$versionFile"
 rm "$versionFileTmp"
 
 #- commit
