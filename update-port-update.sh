@@ -1,8 +1,7 @@
 #!/bin/bash
 
 repoName="arcdps-extension"
-repoFirstLetter="${repoName:0:1}"
-"${arcdps-extension:0:1}"
+repoFirstLetter=$(echo "$repoName" | head -c 1)
 repo="knoxfighter/$repoName"
 file="ports/$repoName/portfile.cmake"
 
@@ -34,7 +33,7 @@ rev=$(git rev-parse "HEAD:ports/$repoName/")
 versionFile="versions/${repoFirstLetter}-/${repoName}.json"
 versionFileTmp="$versionFile.tmp"
 mv "$versionFile" "$versionFileTmp"
-jq '.versions[0]."git-tree" = "test"' "$versionFileTmp" > "$versionFile"
+jq --tab '.versions[0]."git-tree" = "test"' "$versionFileTmp" > "$versionFile"
 rm "$versionFileTmp"
 
 #- commit
