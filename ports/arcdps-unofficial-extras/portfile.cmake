@@ -3,9 +3,9 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Krappa322/arcdps_unofficial_extras_releases
-    REF 0c4f125343c43700d2e886e75a81514481a30982
-    SHA512 fc35f389846f620e0af115d8c9e6072d62ed6702561738535c7d6a9c3146f720d1df5d6859aaaaa33dd427145b4a3d9ec01cd394943e18e8dd9d24fc4b7662e3
-    HEAD_REF vcpkg-update
+    REF d7e12caf024933bf8282b6c1fc5f149b78608a04
+    SHA512 f77e59b3418151583ca8826fb29339c0f739fa58df872316f6f3491cc1b33b911e27fcb67086bb13366beb535d8cbf8e9059ddf48a76e00889504afc7b9e000f
+    HEAD_REF master
 )
 
 vcpkg_cmake_configure(
