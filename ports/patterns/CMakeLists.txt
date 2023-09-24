@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 3.26)
 
-cmake_host_system_information(RESULT baum QUERY WINDOWS_REGISTRY "HKCU\\Environment" VALUE "Path")
+# Read windows registry Current User Path env variable
+cmake_host_system_information(RESULT Path QUERY WINDOWS_REGISTRY "HKCU\\Environment" VALUE "Path")
 
-find_program(Cargo cargo HINTS ${baum})
+# let cmake find cargo in the path
+find_program(Cargo cargo HINTS ${Path})
 
 if (NOT Cargo)
     message(FATAL_ERROR "Rust' cargo not found, please add it to your CurrentUser Environment Path variable!")
 endif ()
 
+# Run cargo.exe build -r in compile step.
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/target/release/patterns_sys.lib
         COMMAND ${Cargo} build -r
