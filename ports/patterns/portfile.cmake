@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
         OUT_SOURCE_PATH SOURCE_PATH
         REPO knoxfighter/patterns
-        REF 
-        SHA512 cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e
+        REF 28831c7c2490530e4c9847f7159072885ea5e53d
+        SHA512 cc00858a6bcb7bc3ae1fff671be9bbf9852b9a939710d66d5aafddc2d6f0c39c23037a7d48da4ccc1ff84e8bc89f1d017b41a959067fa6ad913060b1a48a7666
         HEAD_REF bugfix_build
 )
 
