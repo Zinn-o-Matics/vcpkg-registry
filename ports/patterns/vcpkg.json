@@ -1,0 +1,16 @@
+{
+  "name": "patterns",
+  "version": "0.0.1",
+  "port-version": 0,
+  "description": "no_std compatible pattern scan library using simd",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
