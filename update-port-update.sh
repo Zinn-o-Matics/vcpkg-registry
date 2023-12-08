@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# check if tools are installed
+# curl, jq, git
+function check_installed() {
+	if ! command -v $1 &> /dev/null
+	then
+		echo "$1 could not be found, please install it"
+		exit 1
+	fi
+}
+check_installed curl
+check_installed jq
+check_installed git
+
 printf "Please select a port:\n"
 select d in ports/*; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 portName=${d#*/}
