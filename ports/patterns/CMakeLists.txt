@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.26)
 
 # Read windows registry Current User Path env variable
 cmake_host_system_information(RESULT Path QUERY WINDOWS_REGISTRY "HKCU\\Environment" VALUE "Path")
+set(ProgamPathBackup "${CMAKE_PROGRAM_PATH}")
+set(CMAKE_PROGRAM_PATH "${Path}") # this has to be here in 3.26
 
 # let cmake find cargo in the path
-find_program(Cargo cargo HINTS ${Path})
+find_program(Cargo cargo PATHS "${Path}")
+
+set(CMAKE_PROGRAM_PATH "${ProgamPathBackup}") # cleanup after myself
 
 if (NOT Cargo)
-    message(FATAL_ERROR "Rust' cargo not found, please add it to your CurrentUser Environment Path variable!")
+    message(FATAL_ERROR "Rust cargo not found, please add it to your CurrentUser Environment Path variable!")
 endif ()
 
 # Run cargo.exe build -r in compile step.
