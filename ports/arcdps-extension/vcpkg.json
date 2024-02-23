@@ -3,12 +3,10 @@
   "name": "arcdps-extension",
   "version-string": "1.0.0",
   "dependencies": [
-    "arcdps-unofficial-extras",
-	"magic-enum",
-	"nlohmann-json",
-	"cpr",
-	"imgui",
+    "magic-enum",
+    "nlohmann-json",
     "gtest",
+    "curl",
 	{
       "name": "vcpkg-cmake",
       "host": true
@@ -16,6 +14,30 @@
 	{
       "name": "vcpkg-cmake-config",
       "host": true
+    }
+  ],
+  "default-features": [
+    "imgui",
+    "unofficial-extras"
+  ],
+  "features": {
+    "imgui": {
+      "description": "make imgui tools available",
+      "dependencies": [
+        "imgui"
+      ]
+    },
+    "unofficial-extras": {
+      "description": "make tools available, that depend on arcdps-unofficial-extras",
+      "dependencies": [
+        "arcdps-unofficial-extras"
+      ]
+    }
+  },
+  "overrides": [
+    {
+      "name": "imgui",
+      "version": "1.80#1"
     }
   ]
 }
