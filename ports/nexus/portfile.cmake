@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO knoxfighter/RCGG-lib-nexus-api
-    REF 1e5bd141ee3e1d5b50dd1aae1fb681584370d0ac
-    SHA512 d023fbc8ea53b2b6c3bcca8a0d760cd7cf5e1e71615a6b3a4128918f5bc04cc3a95fe4816c4cfb710264e2543eb09ae6ecb8313c37fa9bfd8f5d5b98b00ef343
+    REF 511eecdcdefb1699fde8b803f1b1634ba1cac08b
+    SHA512 587693b4157ea8d0266d4f79d3f01f9496032766cba287303b38fab97e35da70230782941efe162ac7dc0ba5685131b94a8cb89b61bf1fdbccbd9b960a7b4b02
     HEAD_REF optional-imgui
 )
 
