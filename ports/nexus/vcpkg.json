@@ -12,5 +12,16 @@
             "name": "vcpkg-cmake-config",
             "host": true
         }
-    ]
+    ],
+    "default-features": [
+        "imgui"
+    ],
+    "features": {
+        "imgui": {
+            "description": "use imgui types",
+            "dependencies": [
+                "imgui"
+            ]
+        }
+    }
 }
