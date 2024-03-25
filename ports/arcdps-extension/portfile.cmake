@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO knoxfighter/arcdps-extension
-    REF 96ec498855b56928282a4feec9a1d838c921362f
-    SHA512 e168006365180bd772bf4bd4365afff3aba014b27193292c1e41d71c5344ca95585040231d796ef5b4f7896ab01c9725d242d0cda54a3df2d9f8692674ed8a60
+    REF f58b0266b0d98a78b9ae2d66c390916618fed81d
+    SHA512 412db92ede870a82b6700ba1d6b74d05743e671ba10dff40bf4ae02fd5dba15fc3aaed6d73d1b9926acba83afcfb1b1b0c7eb6d4ff5fba4625ddc9cd24be7c94
     HEAD_REF vcpkg-update
 )
 
