@@ -10,7 +10,7 @@ vcpkg_from_github(
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
-    imgui				ARCDPS_EXTENSION_IMGUI
+	imgui				ARCDPS_EXTENSION_IMGUI
 	unofficial-extras	ARCDPS_EXTENSION_UNOFFICIAL_EXTRAS
 )
 

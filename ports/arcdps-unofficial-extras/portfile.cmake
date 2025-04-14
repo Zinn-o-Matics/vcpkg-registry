@@ -8,8 +8,16 @@ vcpkg_from_github(
     HEAD_REF master
 )
 
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+    magic-enum				ARCPDS_UNOFFICIAL_EXTRAS_MAGIC_ENUM
+    cpp11					ARCPDS_UNOFFICIAL_EXTRAS_CPP_11
+)
+
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
+    OPTIONS
+        ${FEATURE_OPTIONS}
 )
 
 vcpkg_cmake_install()
