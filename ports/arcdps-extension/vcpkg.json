@@ -6,7 +6,6 @@
     "magic-enum",
     "nlohmann-json",
     "gtest",
-    "curl",
 	{
       "name": "vcpkg-cmake",
       "host": true
@@ -18,7 +17,8 @@
   ],
   "default-features": [
     "imgui",
-    "unofficial-extras"
+    "unofficial-extras",
+    "curl"
   ],
   "features": {
     "imgui": {
@@ -31,6 +31,12 @@
       "description": "make tools available, that depend on arcdps-unofficial-extras",
       "dependencies": [
         "arcdps-unofficial-extras"
+      ]
+    },
+    "curl":{
+      "description": "make tools available, that depend on curl",
+      "dependencies": [
+        "curl"
       ]
     }
   },

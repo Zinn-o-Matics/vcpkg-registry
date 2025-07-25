@@ -12,6 +12,7 @@ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES
 	imgui				ARCDPS_EXTENSION_IMGUI
 	unofficial-extras	ARCDPS_EXTENSION_UNOFFICIAL_EXTRAS
+	curl                ARCDPS_EXTENSION_CURL
 )
 
 vcpkg_cmake_configure(
