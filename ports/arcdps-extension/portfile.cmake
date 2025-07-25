@@ -5,7 +5,7 @@ vcpkg_from_github(
     REPO knoxfighter/arcdps-extension
     REF d112786e411617ca0e205666909f6c4c0dd22cfa
     SHA512 d5f15f41799a693dc7b2cadee754ab1a483dfe16ed9721c408f0d088ede31f4822cabc250c5ae5455b925e00b07ae01ddd33d7fc7fb79da7c33ff499f2879a73
-    HEAD_REF vcpkg-update
+    HEAD_REF main
 )
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
