@@ -11,6 +11,15 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "arcdps-extension"
+    "imgui",
+    {
+      "name": "arcdps-extension",
+      "default-features": false,
+      "features": [
+        "imgui"
+      ]
+    },
+    "magic-enum",
+    "nlohmann-json"
   ]
 }
