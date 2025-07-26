@@ -5,7 +5,7 @@ vcpkg_from_github(
         REPO Krappa322/arcdps_mock
         REF dfc9d060f93a7daaf66342d6b9228fb168a13585
         SHA512 4b8e89555917ccb455fce717199b423abc1fc4960b5ef765dbe8e484a1a166707228b4a06d1fa04e3078f90c3f4bd9d527becd336c1f420f5dd680bb34ca01ab
-        HEAD_REF vcpkg
+        HEAD_REF master
 )
 
 vcpkg_cmake_configure(
