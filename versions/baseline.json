@@ -31,6 +31,10 @@
     "arcdps-mock": {
       "baseline": "0.1.0",
       "port-version": 0
-    }
+    },
+	"gw2load": {
+	  "baseline": "0.0.1",
+	  "port-version": 0
+	}
   }
 }
