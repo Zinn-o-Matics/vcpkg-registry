@@ -1,7 +1,7 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "arcdps-mock",
-  "version-string": "0.1.0",
+  "version": "0.2.0",
   "dependencies": [
     {
       "name": "arcdps-extension",
@@ -20,6 +20,30 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
+    }
+  ],
+  "features": {
+    "build-tools": {
+      "description": "install dependencies for the tools",
+      "dependencies": [
+        {
+          "name": "imgui",
+          "features": [
+            "dx11-binding",
+            "win32-binding"
+          ]
+        }
+      ]
+    }
+  },
+  "overrides": [
+    {
+      "name": "arcdps-extension",
+      "version": "2.1.0"
+    },
+    {
+      "name": "imgui",
+      "version": "1.92.7"
     }
   ]
 }
