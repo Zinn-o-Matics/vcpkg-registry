@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
         OUT_SOURCE_PATH SOURCE_PATH
         REPO Krappa322/arcdps_mock
-        REF e8ffb64aa31a64ca2593994fb013014efa1011eb
-        SHA512 ad8d5ca09ffe13b10b931c545b519a5c400416f34e4b9edfebfb9166ac90f9d1263bb2dcaa55d2f82f04f64bcb0dfd9cc7f39a6b0ab91350f5fb63774c8d2ddb
+        REF d876f047cf88610f073a06297040a5c7d86fbde2
+        SHA512 a4c5f51dbb929372f717f6edea4a6799df7f22734b249ea5efefefc78ef5545d8cc8bbab414f1aa4d649fb0fd31d67acbc0926fe384e18e3cbd9af91fa474e2b
         HEAD_REF master
 )
 
