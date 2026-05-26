@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "arcdps-extension",
-  "version-string": "2.1.0",
+  "version-string": "2.2.0",
   "dependencies": [
     "magic-enum",
     "nlohmann-json",
@@ -37,7 +37,14 @@
     "curl":{
       "description": "make tools available, that depend on curl",
       "dependencies": [
-        "curl"
+        {
+          "name": "curl",
+          "default-features": false,
+          "features": [
+            "non-http",
+            "openssl"
+          ]
+        }
       ]
     }
   },
