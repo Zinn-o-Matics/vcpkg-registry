@@ -1,0 +1,333 @@
+# ============================================================
+# The port name is read from the `name` field in vcpkg.json.
+#
+# This action is skipped when the version in the vcpkg.json didn't change.
+#
+# In the calling repo a tag with the release is created and that tag is then used as REF.
+# The registry has to have a folder with a portfile.cmake before running this.
+# Also a the version file has to be created beforehand.
+#
+# Usage in a library repo:
+#   - uses: Zinn-o-Matics/vcpkg-registry/.github/actions/publish-port@main
+#     with:
+#       registry-pat: ${{ secrets.REGISTRY_PAT }}
+# ============================================================
+
+name: Publish port to vcpkg registry
+description: >
+  Detects a version change in vcpkg.json, tags the library repo,
+  and updates the caller's port entry in this vcpkg registry.
+  Port name is read from the `name` field in vcpkg.json.
+
+inputs:
+  registry-pat:
+    description: PAT with write access to the registry repo
+    required: true
+
+  registry-repo:
+    description: >
+      The owner/repo of the vcpkg registry.
+      Defaults to the repo this action is part of.
+    required: false
+    default: Zinn-o-Matics/vcpkg-registry
+
+  bot-email:
+    description: Git author email for commits and tags
+    required: false
+    default: vcpkg-bot@users.noreply.github.com
+
+  bot-name:
+    description: Git author name for commits and tags
+    required: false
+    default: vcpkg-bot
+
+  add-cmake-deps:
+    description: >
+      Whether to inject vcpkg-cmake and vcpkg-cmake-config (both host=true)
+      into the dependencies of the registry's vcpkg.json copy.
+      Disable only for ports that genuinely don't use CMake.
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    # ----------------------------------------------------------
+    # 1. Detect whether the version field actually changed.
+    #    Composite actions don't inherit the calling workflow's
+    #    checkout, so the library repo is already checked out
+    #    with fetch-depth: 2 by the caller.
+    # ----------------------------------------------------------
+    - name: Detect version change
+      id: ver
+      shell: bash
+      run: |
+        # "${1:--}" means: use $1 as a filename if given, otherwise "-"
+        # which tells jq to read from stdin. This lets the same function
+        # work both as "get_version vcpkg.json" and "some-cmd | get_version".
+        get_version() {
+          jq -r '
+            .version //
+            .["version-semver"] //
+            .["version-date"] //
+            .["version-string"] //
+            empty
+          ' "${1:--}"
+        }
+
+        get_version_key() {
+          jq -r '
+            if .version then "version"
+            elif .["version-semver"] then "version-semver"
+            elif .["version-date"] then "version-date"
+            elif .["version-string"] then "version-string"
+            else empty
+            end
+          ' "${1:--}"
+        }
+
+        PORT=$(jq -r '.name // empty' vcpkg.json)
+        if [ -z "$PORT" ]; then
+          echo "ERROR: no 'name' field found in vcpkg.json" >&2
+          exit 1
+        fi
+
+        PREV=$(git show HEAD~1:vcpkg.json 2>/dev/null | get_version || echo "")
+        CURR=$(get_version vcpkg.json)
+        KEY=$(get_version_key vcpkg.json)
+
+        if [ -z "$CURR" ]; then
+          echo "ERROR: no version field found in vcpkg.json" >&2
+          exit 1
+        fi
+
+        echo "port=$PORT"  >> $GITHUB_OUTPUT
+        echo "prev=$PREV"  >> $GITHUB_OUTPUT
+        echo "curr=$CURR"  >> $GITHUB_OUTPUT
+        echo "key=$KEY"    >> $GITHUB_OUTPUT
+
+        if [ "$PREV" = "$CURR" ]; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "Version unchanged ($CURR), skipping."
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "Version changed: $PREV -> $CURR"
+        fi
+
+    # ----------------------------------------------------------
+    # 2. Tag the library repo
+    # ----------------------------------------------------------
+    - name: Create git tag
+      if: steps.ver.outputs.changed == 'true'
+      shell: bash
+      run: |
+        git config user.email "${{ inputs.bot-email }}"
+        git config user.name "${{ inputs.bot-name }}"
+        git tag "v${{ steps.ver.outputs.curr }}"
+        git push origin "v${{ steps.ver.outputs.curr }}"
+        echo "Tagged v${{ steps.ver.outputs.curr }}"
+
+    # ----------------------------------------------------------
+    # 3. Checkout the registry repo into ./registry/
+    #    GITHUB_ACTION_REPOSITORY is the repo where this action
+    #    lives — i.e. the registry itself.
+    # ----------------------------------------------------------
+    - name: Checkout registry
+      if: steps.ver.outputs.changed == 'true'
+      uses: actions/checkout@v6
+      with:
+        repository: ${{ inputs.registry-repo }}
+        token: ${{ inputs.registry-pat }}
+        path: registry
+
+    # ----------------------------------------------------------
+    # 4. Copy vcpkg.json into the registry, then optionally
+    #    inject the vcpkg-cmake and vcpkg-cmake-config deps.
+    #
+    #    The inject step uses jq to merge the two host deps into
+    #    the existing dependencies array, deduplicating by name
+    #    so re-runs are idempotent and manually added entries
+    #    are not duplicated.
+    # ----------------------------------------------------------
+    - name: Copy vcpkg.json into registry
+      if: steps.ver.outputs.changed == 'true'
+      shell: bash
+      run: |
+        DEST="registry/ports/${{ steps.ver.outputs.port }}"
+        mkdir -p "$DEST"
+        cp vcpkg.json "$DEST/vcpkg.json"
+        echo "Copied vcpkg.json to $DEST"
+
+    - name: Inject CMake host dependencies
+      if: steps.ver.outputs.changed == 'true' && inputs.add-cmake-deps == 'true'
+      shell: bash
+      run: |
+        FILE="registry/ports/${{ steps.ver.outputs.port }}/vcpkg.json"
+
+        # The two deps to inject, as a jq-ready array
+        CMAKE_DEPS='[
+          { "name": "vcpkg-cmake",        "host": true },
+          { "name": "vcpkg-cmake-config", "host": true }
+        ]'
+
+        # Merge strategy:
+        #   1. Start from existing dependencies (default to [])
+        #   2. Remove any existing entries for these two names
+        #      (so a re-run or manual pre-existing entry won't duplicate)
+        #   3. Prepend the canonical host dep entries
+        jq --argjson cmake_deps "$CMAKE_DEPS" '
+          .dependencies = (
+            $cmake_deps +
+            (
+              .dependencies // [] |
+              map(select(
+                (if type == "string" then . else .name end) |
+                . != "vcpkg-cmake" and . != "vcpkg-cmake-config"
+              ))
+            )
+          )
+        ' "$FILE" > tmp.json && mv tmp.json "$FILE"
+
+        echo "Injected CMake host dependencies into $FILE:"
+        jq '.dependencies' "$FILE"
+
+    # ----------------------------------------------------------
+    # 5. Update portfile.cmake in the registry with the new tag
+    #    and the SHA512 of the release archive.
+    #
+    #    Assumptions about portfile.cmake format (standard vcpkg):
+    #      vcpkg_from_github(
+    #        ...
+    #        REF     "v1.2.3"      <- updated to the new tag
+    #        SHA512  abc123...     <- updated to the archive hash
+    #        ...
+    #      )
+    #
+    #    The sed patterns are broad enough to match whether REF is
+    #    a quoted tag, a bare commit SHA, or any previous value.
+    #    SHA512 is always a lowercase hex string in vcpkg portfiles.
+    # ----------------------------------------------------------
+    - name: Update portfile.cmake
+      if: steps.ver.outputs.changed == 'true'
+      shell: bash
+      run: |
+        PORTFILE="registry/ports/${{ steps.ver.outputs.port }}/portfile.cmake"
+
+        if [ ! -f "$PORTFILE" ]; then
+          echo "ERROR: $PORTFILE not found in the registry." >&2
+          echo "Create an initial portfile.cmake for ${{ steps.ver.outputs.port }} in the registry first." >&2
+          exit 1
+        fi
+
+        # Download the source archive that vcpkg fetches at install time
+        URL="https://github.com/${{ github.repository }}/archive/refs/tags/v${{ steps.ver.outputs.curr }}.tar.gz"
+        echo "Downloading $URL ..."
+        curl -fsSL "$URL" -o source.tar.gz
+
+        SHA512=$(sha512sum source.tar.gz | awk '{print $1}')
+        echo "SHA512: $SHA512"
+        rm source.tar.gz
+
+        # Update REF — matches quoted strings, bare SHAs, anything on that line
+        sed -i -E "s|([ \t]+REF[ \t]+).*|\1\"v${{ steps.ver.outputs.curr }}\"|" "$PORTFILE"
+
+        # Update SHA512 — always a hex string
+        sed -i -E "s|([ \t]+SHA512[ \t]+)[a-fA-F0-9]+|\1${SHA512}|" "$PORTFILE"
+
+        echo "Updated $PORTFILE:"
+        grep -E "REF|SHA512" "$PORTFILE"
+
+    # ----------------------------------------------------------
+    # 6. Compute the git-tree SHA, then update the two version
+    #    JSON files in the registry.
+    #
+    #    Order:
+    #      a) commit port files (temp) -> get tree SHA via rev-parse
+    #      b) update versions/<x>-/<port>.json  (newest entry first)
+    #      c) update versions/baseline.json
+    #      d) amend the temp commit to include the version files
+    # ----------------------------------------------------------
+    - name: Update registry version files
+      if: steps.ver.outputs.changed == 'true'
+      shell: bash
+      run: |
+        cd registry
+
+        git config user.email "${{ inputs.bot-email }}"
+        git config user.name "${{ inputs.bot-name }}"
+        
+        PORT=${{ steps.ver.outputs.port }}
+        VERSION=${{ steps.ver.outputs.curr }}
+        VERSION_KEY=${{ steps.ver.outputs.key }}
+
+        # Temp commit to get a stable tree SHA
+        git add "ports/$PORT"
+        git commit -m "temp: stage $PORT port files"
+        TREE=$(git rev-parse "HEAD:ports/$PORT")
+        echo "git-tree SHA: $TREE"
+
+        # ---- versions/<x>-/<port>.json -------------------------
+        FIRST="${PORT:0:1}"
+        VERSION_FILE="versions/${FIRST}-/${PORT}.json"
+        mkdir -p "versions/${FIRST}-"
+
+        if [ ! -f "$VERSION_FILE" ]; then
+          echo '{"versions": []}' > "$VERSION_FILE"
+        fi
+
+        # If this version is already listed (re-run after failure),
+        # update the tree SHA in place rather than appending a duplicate
+        ALREADY=$(jq --arg vkey "$VERSION_KEY" --arg vval "$VERSION" \
+          '[.versions[] | .[$vkey]] | any(. == $vval)' \
+          "$VERSION_FILE")
+
+        if [ "$ALREADY" = "true" ]; then
+          echo "Version $VERSION already present — updating tree SHA in place."
+          jq --arg vkey "$VERSION_KEY" \
+             --arg vval "$VERSION" \
+             --arg tree "$TREE" \
+            '(.versions[] | select(.[$vkey] == $vval)) |= . + {"git-tree": $tree}' \
+            "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
+        else
+          NEW_ENTRY=$(jq -n \
+            --arg vkey "$VERSION_KEY" \
+            --arg vval "$VERSION" \
+            --arg tree "$TREE" \
+            '{ ($vkey): $vval, "port-version": 0, "git-tree": $tree }')
+
+          jq --argjson entry "$NEW_ENTRY" \
+            '.versions = [$entry] + .versions' \
+            "$VERSION_FILE" > tmp.json && mv tmp.json "$VERSION_FILE"
+        fi
+
+        echo "Updated $VERSION_FILE:"
+        cat "$VERSION_FILE"
+
+        # ---- versions/baseline.json ----------------------------
+        BASELINE_FILE="versions/baseline.json"
+        if [ ! -f "$BASELINE_FILE" ]; then
+          echo '{"default": {}}' > "$BASELINE_FILE"
+        fi
+
+        jq --arg port "$PORT" \
+           --arg vval "$VERSION" \
+          '.default[$port] = { "baseline": $vval, "port-version": 0 }' \
+          "$BASELINE_FILE" > tmp.json && mv tmp.json "$BASELINE_FILE"
+
+        echo "Updated baseline entry for $PORT:"
+        jq --arg port "$PORT" '.default[$port]' "$BASELINE_FILE"
+
+        # Amend temp commit to include version file changes
+        git add "versions/"
+        git commit --amend -m "chore: bump $PORT to $VERSION"
+
+    # ----------------------------------------------------------
+    # 6. Push the registry
+    # ----------------------------------------------------------
+    - name: Push registry
+      if: steps.ver.outputs.changed == 'true'
+      shell: bash
+      run: |
+        cd registry
+        git push
+        echo "Registry updated: ${{ steps.ver.outputs.port }} -> ${{ steps.ver.outputs.curr }}"
