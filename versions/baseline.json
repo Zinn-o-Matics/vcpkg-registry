@@ -1,7 +1,7 @@
 {
   "default": {
     "arcdps-extension": {
-      "baseline": "2.3.0",
+      "baseline": "2.3.1",
       "port-version": 0
     },
     "arcdps-mock": {
