@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Zinn-o-Matics/arcdps-extension
-    REF "v2.3.2"
-    SHA512 71740b423bc1cf1c0a0da65f8a5baf96a85e74dff41e8fe5ba3eff68f58b4f6db4479553947331d724ecc4c3ace03f85da9f701b6a88056bbac7efe23b9f3805
+    REF "v2.3.3"
+    SHA512 1eed418296e527b4070b707af423f1a190c84e546ecf30e0fc8bad88a46145c1888ae450a48f6e4017fbed2b21ec4ecb804e181f633e995c28569a93bb6f20a9
     HEAD_REF main
 )
 
