@@ -3,8 +3,8 @@ vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO Zinn-o-Matics/modernIni
-    REF "v1.0.2"
-    SHA512 4f849a80f423f68cc4ff774145f71ee11a32dad75e95282b0d907f25a225d60c86c7c857ec85f4d3ce6247dfd118f3123bacee9aa40d426bb9814aa01b3e7f2f
+    REF "v1.0.3"
+    SHA512 b8d6adf362f2f54f4b156d97e0c2120324d2b6cffc621fa00b305e63698eea5d18170b49ea734d4c89e530ab71f2721b97f4b9e4c989aea9f9100207b0bb0a16
     HEAD_REF main
 )
 
